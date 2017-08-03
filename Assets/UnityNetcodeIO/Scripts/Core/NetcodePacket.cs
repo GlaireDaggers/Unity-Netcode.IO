@@ -11,7 +11,7 @@
 	/// </summary>
 	public struct NetcodePacket
 	{
-		public int SenderID;
+		public int ClientID;
 		public List<byte> PacketBuffer;
 
 		public void Release()

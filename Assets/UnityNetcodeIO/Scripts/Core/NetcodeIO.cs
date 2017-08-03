@@ -73,7 +73,7 @@
 
 		// callback for when packets are received over the network
 		[MonoPInvokeCallback(typeof(Action<int, int, IntPtr, int>))]
-		protected static void handleClientMessage(int clientHandle, int senderID, IntPtr packetBufferPtr, int packetBufferLength)
+		protected static void handleClientMessage(int clientHandle, int clientID, IntPtr packetBufferPtr, int packetBufferLength)
 		{
 			unsafe
 			{
@@ -86,7 +86,7 @@
 
 				// create packet struct
 				NetcodePacket packet = new NetcodePacket();
-				packet.SenderID = senderID;
+				packet.ClientID = clientID;
 				packet.PacketBuffer = byteArray;
 
 				// route packet to client by client handle
