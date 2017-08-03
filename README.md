@@ -54,7 +54,7 @@ You can add a listener for when packets are received using `NetcodeClient.Networ
 client.NetworkMessageEvent.AddListener( (clientReceiver, packet) =>
 {
 	// clientReceiver is the client receiving the packet
-	// packet contains ID of sender and List<byte> of packet payload
+	// packet contains client ID (as originally issued by token server) and List<byte> of packet payload
 	// note that the payload will be returned to a pool after this handler runs, so do not keep a reference to it!
 } );
 ```
