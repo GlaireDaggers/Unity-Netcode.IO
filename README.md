@@ -28,7 +28,7 @@ NetcodeIO.CreateClient( protocol, (client)=>
 } );
 ```
 
-Assuming you have a connect token and a client created, you can connect to a server using `NetcodeClient.Connect`:
+Assuming you have a byte[] connect token and a client created, you can connect to a server using `NetcodeClient.Connect`:
 
 ```c#
 client.Connect( connectToken, () =>
