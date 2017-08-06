@@ -2,10 +2,10 @@
 A lightweight and easy-to-use plugin to allow Unity games to take advantage of the [Netcode.IO](https://github.com/networkprotocol/netcode.io) protocol for secure UDP communication.
 
 # Netcode.IO.NET
-Unity-Netcode.IO makes use of [Netcode.IO.NET](https://github.com/KillaMaaki/Netcode.IO.NET) to provide support on most platforms except for WebGL (handled via JS plugin). Because of this, the full Netcode.IO.NET API is available to you under the NetcodeIO.NET namespace.
+Unity-Netcode.IO makes use of [Netcode.IO.NET](https://github.com/KillaMaaki/Netcode.IO.NET) to provide support on most platforms except for WebGL (handled via JS plugin). Because of this, the full Netcode.IO.NET API is available to you under the `NetcodeIO.NET` namespace.
 
 # Usage
-All API functions are in the UnityNetcodeIO namespace.
+All API functions are in the `UnityNetcodeIO` namespace.
 First, query for Netcode.IO support with `UnityNetcode.QuerySupport`:
 
 ```c#
@@ -82,8 +82,8 @@ UnityNetcode.DestroyClient( client );
 ```
 
 ## Server API
-The server API relies on some classes under the NetcodeIO.NET namespace, so be sure to include it with any code using the server API.
-Note that the Server API is not compatible with WebGL - attempting to create a server will throw a NotImplementedException. All other platforms may use it, however.
+The server API relies on some classes under the `NetcodeIO.NET` namespace, so be sure to include it with any code using the server API.
+Note that the Server API is not compatible with WebGL - attempting to create a server will throw a `NotImplementedException`. All other platforms may use it, however.
 
 To create a new server, use:
 ```c#
