@@ -1,29 +1,27 @@
 # Unity-Netcode.IO
-A lightweight plugin to allow WebGL Unity games to use Netcode.IO for UDP socket communication.
-
-This plugin wraps around the JavaScript API for this Netcode.IO browser extension: https://github.com/RedpointGames/netcode.io-browser and exposes it to Unity in a simple and easy-to-use API.
+A lightweight and easy-to-use plugin to allow Unity games to take advantage of the [Netcode.IO](https://github.com/networkprotocol/netcode.io) protocol for secure UDP communication.
 
 # Usage
 All API functions are in the UnityNetcodeIO namespace.
-First, query for Netcode.IO support in the user's browser with `NetcodeIO.QuerySupport`:
+First, query for Netcode.IO support with `UnityNetcode.QuerySupport`:
 
 ```c#
 // check for Netcode.IO extension
 // Will provide NetcodeIOSupportStatus enum, either:
-// Available, if Netcode.IO is available and the standalone helper is installed,
+// Available, if Netcode.IO is available and the standalone helper is installed (or if in standalone),
 // Unavailable, if Netcode.IO is unsupported (direct user to install extension)
 // HelperNotInstalled, if Netcode.IO is available but the standalone helper is not installed (direct user to install the standalone helper)
-NetcodeIO.QuerySupport( (supportStatus) =>
+UnityNetcode.QuerySupport( (supportStatus) =>
 {
 } );
 ```
 
-Next, create a client using `NetcodeIO.CreateClient`:
+Next, create a client using `UnityNetcode.CreateClient`:
 
 ```c#
 // create a Netcode.IO client using the given protocol
 // Protocol is either NetcodeIOClientProtocol.IPv4 or NetcodeIOClientProtocol.IPv6
-NetcodeIO.CreateClient( protocol, (client)=>
+UnityNetcode.CreateClient( protocol, (client)=>
 {
 } );
 ```
@@ -48,10 +46,10 @@ client.QueryStatus( (status)=>
 } );
 ```
 
-You can add a listener for when packets are received using `NetcodeClient.NetworkMessageEvent.AddListener`:
+You can add a listener for when packets are received using `NetcodeClient.AddPayloadListener`:
 
 ```c#
-client.NetworkMessageEvent.AddListener( (clientReceiver, packet) =>
+client.AddPayloadListener( (clientReceiver, packet) =>
 {
 	// clientReceiver is the client receiving the packet
 	// packet contains client ID (as originally issued by token server) and List<byte> of packet payload
@@ -73,13 +71,12 @@ You can set a client's tickrate using `NetcodeClient.SetTickrate`:
 client.SetTickrate( ticksPerSecond );
 ```
 
-And finally, you can destroy a client using `NetcodeIO.DestroyClient`:
+And finally, you can destroy a client using `UnityNetcode.DestroyClient`:
 
 ```c#
 // disconnects and destroys the client. Note that the client cannot be reused after this!
-NetcodeIO.DestroyClient( client );
+UnityNetcode.DestroyClient( client );
 ```
 
 # Platforms
-Currently only WebGL is supported. All other platforms will indicate no support when querying for Netcode.IO support.
-However, I have already put up a new repository for my [Netcode.IO.NET project](https://github.com/KillaMaaki/Netcode.IO.NET), which is intentionally .NET 3.5 compatible, and will soon be updating this repo to add seamless support for using Netcode.IO on other platforms, including a server API.
+UnityNetcode.IO runs on all platforms which support raw socket communication, as well as WebGL with the use of a wrapper around this [browser extension](https://github.com/RedpointGames/netcode.io-browser) which brings Netcode.IO support to the browser.
