@@ -6,7 +6,7 @@ using UnityEngine.Networking;
 
 using UnityNetcodeIO;
 
-public class TestNetcodeIO : MonoBehaviour
+public class TestNetcodeIOClient : MonoBehaviour
 {
 	public Text outputText;
 	public Text StatusText;
@@ -21,13 +21,13 @@ public class TestNetcodeIO : MonoBehaviour
 	{
 		logLine("Checking for Netcode.IO support...");
 
-		NetcodeIO.QuerySupport((supportStatus) =>
+		UnityNetcode.QuerySupport((supportStatus) =>
 		{
 			if (supportStatus == NetcodeIOSupportStatus.Available)
 			{
 				logLine("Netcode.IO available and ready!");
 
-				NetcodeIO.CreateClient(NetcodeIOClientProtocol.IPv4, (client) =>
+				UnityNetcode.CreateClient(NetcodeIOClientProtocol.IPv4, (client) =>
 				{
 					this.client = client;
 					StartCoroutine(connectToServer());
@@ -55,14 +55,14 @@ public class TestNetcodeIO : MonoBehaviour
 			logLine("Failed to obtain connect token: " + webRequest.error);
 			yield break;
 		}
-
+		
 		byte[] connectToken = System.Convert.FromBase64String(webRequest.downloadHandler.text);
 		client.Connect(connectToken, () =>
 		   {
 			   logLine("Connected to netcode.io server!");
 
 			   // add listener for network messages
-			   client.NetworkMessageEvent.AddListener(ReceivePacket);
+			   client.AddPayloadListener(ReceivePacket);
 
 			   // do stuff
 			   StartCoroutine(updateStatus());
@@ -97,7 +97,7 @@ public class TestNetcodeIO : MonoBehaviour
 	{
 		int sent = 0;
 
-		while(true)
+		while (true)
 		{
 			if (client.Status == NetcodeClientStatus.Connected)
 			{
@@ -117,7 +117,8 @@ public class TestNetcodeIO : MonoBehaviour
 
 	private void OnDestroy()
 	{
-		NetcodeIO.DestroyClient(client);
+		if (client != null)
+			UnityNetcode.DestroyClient(client);
 	}
 
 	protected void log(string text)

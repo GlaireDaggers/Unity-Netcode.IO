@@ -181,7 +181,29 @@ var netcodelib = {
 			if( err != null )
 				throw( err );
 				
-			SendMessage( handlerObject, "OnNetcodeIOClientStatusAvailable", status );
+			var statusCode = 0;
+			if( status == "connectTokenExpired" )
+				statusCode = -6;
+			else if( status == "invalidConnectToken" )
+				statusCode = -5;
+			else if( status == "connectionTimedOut" )
+				statusCode = -4;
+			else if( status == "challengeResponseTimedOut" )
+				statusCode = -3;
+			else if( status == "connectionRequestTimedOut" )
+				statusCode = -2;
+			else if( status == "connectionDenied" )
+				statusCode = -1;
+			else if( status == "disconnected" )
+				statusCode = 0;
+			else if( status == "sendingConnectionRequest" )
+				statusCode = 1;
+			else if( status == "sendingChallengeResponse" )
+				statusCode = 2;
+			else if( status == "connected" )
+				statusCode = 3;
+				
+			SendMessage( handlerObject, "OnNetcodeIOClientStatusAvailable", statusCode );
 		}.bind(this) );
 	},
 	

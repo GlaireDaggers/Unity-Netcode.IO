@@ -1,11 +1,15 @@
-﻿namespace UnityNetcodeIO
+﻿#if WEBGL && !UNITY_EDITOR
+#define USE_WEBGL_PLUGIN
+#endif
+
+namespace UnityNetcodeIO
 {
-	using System.Collections;
 	using System.Collections.Generic;
 	using UnityEngine;
 	using UnityEngine.Events;
 
 	using UnityNetcodeIO.Internal;
+	using NetcodeIO.NET;
 
 	/// <summary>
 	/// Event handler for incoming network messages
@@ -17,29 +21,24 @@
 	/// </summary>
 	public enum NetcodeClientStatus
 	{
-		Disconnected,
-		Connected,
+		Disconnected = 0,
+		Connected = 3,
 
-		SendingConnectionRequest,
-		SendingConnectionResponse,
+		SendingConnectionRequest = 1,
+		SendingConnectionResponse = 2,
 
-		ConnectionDenied,
-		ConnectionRequestTimeout,
-		ConnectionResponseTimeout,
-		ConnectionTimedOut,
-		ConnectTokenExpired,
-		InvalidConnectToken,
+		ConnectionDenied = -1,
+		ConnectionRequestTimeout = -2,
+		ConnectionResponseTimeout = -3,
+		ConnectionTimedOut = -4,
+		InvalidConnectToken = -5,
+		ConnectTokenExpired = -6,
 	}
 
-	/// <summary>
-	/// Represents a Netcode.IO client
-	/// </summary>
-	public class NetcodeClient : MonoBehaviour
+	// shared stuff
+	public partial class NetcodeClient : MonoBehaviour
 	{
 		#region Public Fields
-
-		[System.NonSerialized]
-		public int Handle = -1;
 
 		[System.NonSerialized]
 		public NetcodeMessageEvent NetworkMessageEvent = new NetcodeMessageEvent();
@@ -48,33 +47,26 @@
 
 		#region Public Properties
 
-		/// <summary>
-		/// The last known status of this client
-		/// </summary>
-		public NetcodeClientStatus Status
-		{
-			get { return clientStatus; }
-		}
+		public int Handle { get; set; }
 
 		#endregion
 
-		#region Protected Fields
+		#region Protected fields
 
 		// packet queue for thread safety
 		protected Queue<NetcodePacket> packetQueue = new Queue<NetcodePacket>();
-		protected NetcodeClientStatus clientStatus = NetcodeClientStatus.Disconnected;
-		
-		// state stuff.
-		protected bool isConnecting = false;
-		protected System.Action pendingClientConnectCallback;
-		protected System.Action<string> pendingClientConnectFailedCallback;
+		protected Queue<System.Action> callbackQueue = new Queue<System.Action>();
 
 		#endregion
 
-		#region Internal Methods
+		#region Public methods
 
-		// Called when this client receives a packet
-		internal void ReceivePacket(NetcodePacket packet)
+		public void AddPayloadListener(UnityAction<NetcodeClient, NetcodePacket> listener)
+		{
+			NetworkMessageEvent.AddListener(listener);
+		}
+
+		public void ReceivePacket(NetcodePacket packet)
 		{
 			// push packet onto the queue
 			lock (packetQueue)
@@ -85,12 +77,86 @@
 
 		#endregion
 
-		#region Public Methods
+		#region Unity Methods
+
+		protected void Update()
+		{
+			// process packets in the queue
+			lock (packetQueue)
+			{
+				while (packetQueue.Count > 0)
+				{
+					// note: packet payload is returned to pool after user callbacks
+					// user callbacks should not keep any references to packet payload
+
+					var packet = packetQueue.Dequeue();
+					NetworkMessageEvent.Invoke(this, packet);
+					packet.Release();
+				}
+			}
+
+			lock (callbackQueue)
+			{
+				while (callbackQueue.Count > 0)
+				{
+					callbackQueue.Dequeue()();
+				}
+			}
+		}
+
+		#endregion
+
+		#region Private Methods
+
+		private void pushCallback(System.Action callback)
+		{
+			lock (callbackQueue)
+				callbackQueue.Enqueue(callback);
+		}
+
+		#endregion
+	}
+
+#if USE_WEBGL_PLUGIN
+
+	public partial class NetcodeClient : MonoBehaviour
+	{
+	#region Public Properties
+
+		/// <summary>
+		/// The last known status of this client
+		/// </summary>
+		public NetcodeClientStatus Status
+		{
+			get { return clientStatus; }
+		}
+
+	#endregion
+
+	#region Protected Fields
+
+		// packet queue for thread safety
+		protected NetcodeClientStatus clientStatus = NetcodeClientStatus.Disconnected;
+
+		// state stuff.
+		protected bool isConnecting = false;
+		protected System.Action pendingClientConnectCallback;
+		protected System.Action<string> pendingClientConnectFailedCallback;
+
+	#endregion
+
+	#region Public Methods
+
+		public void Dispose()
+		{
+			NetcodePluginWrapper.netcodeio_destroyClient(Handle);
+			Destroy(gameObject);
+		}
 
 		/// <summary>
 		/// Set this client's tickrate
 		/// </summary>
-		public void SetTickrate( int tickrate)
+		public void SetTickrate(int tickrate)
 		{
 			NetcodePluginWrapper.netcodeio_clientSetTickRate(this.Handle, tickrate);
 		}
@@ -98,7 +164,7 @@
 		/// <summary>
 		/// Query for this client's status
 		/// </summary>
-		public void QueryStatus( System.Action<NetcodeClientStatus> callback )
+		public void QueryStatus(System.Action<NetcodeClientStatus> callback)
 		{
 			StartCoroutine(doQueryStatus(callback));
 		}
@@ -125,12 +191,20 @@
 			NetcodePluginWrapper.netcodeio_clientSend(this.Handle, data, data.Length, gameObject.name);
 		}
 
-		#endregion
+		/// <summary>
+		/// Sends data to the netcode.io server
+		/// </summary>
+		public void Send(byte[] data, int length)
+		{
+			NetcodePluginWrapper.netcodeio_clientSend(this.Handle, data, length, gameObject.name);
+		}
 
-		#region Coroutines
+	#endregion
+
+	#region Coroutines
 
 		protected bool isQueryingStatus = false;
-		protected IEnumerator doQueryStatus( System.Action<NetcodeClientStatus> callback )
+		protected IEnumerator doQueryStatus(System.Action<NetcodeClientStatus> callback)
 		{
 			isQueryingStatus = true;
 			NetcodePluginWrapper.netcodeio_getClientState(this.Handle, gameObject.name);
@@ -140,9 +214,9 @@
 			callback(this.Status);
 		}
 
-		#endregion
+	#endregion
 
-		#region Callback Handlers
+	#region Callback Handlers
 
 		// called when sending a message fails
 		protected void OnNetcodeIOClientSendFailed(string err)
@@ -165,66 +239,110 @@
 		}
 
 		// called when client status is available
-		protected void OnNetcodeIOClientStatusAvailable(string status)
+		protected void OnNetcodeIOClientStatusAvailable(int statusCode)
 		{
 			isQueryingStatus = false;
+			this.clientStatus = (NetcodeClientStatus)statusCode;
+		}
 
-			switch (status)
-			{
-				case "connected":
-					this.clientStatus = NetcodeClientStatus.Connected;
-					break;
-				case "connectionDenied":
-					this.clientStatus = NetcodeClientStatus.ConnectionDenied;
-					break;
-				case "connectionRequestTimeout":
-					this.clientStatus = NetcodeClientStatus.ConnectionRequestTimeout;
-					break;
-				case "connectionResponseTimeout":
-					this.clientStatus = NetcodeClientStatus.ConnectionResponseTimeout;
-					break;
-				case "connectionTimedOut":
-					this.clientStatus = NetcodeClientStatus.ConnectionTimedOut;
-					break;
-				case "connectTokenExpired":
-					this.clientStatus = NetcodeClientStatus.ConnectTokenExpired;
-					break;
-				case "disconnected":
-					this.clientStatus = NetcodeClientStatus.Disconnected;
-					break;
-				case "invalidConnectToken":
-					this.clientStatus = NetcodeClientStatus.InvalidConnectToken;
-					break;
-				case "sendingConnectionRequest":
-					this.clientStatus = NetcodeClientStatus.SendingConnectionRequest;
-					break;
-				case "sendingConnectionResponse":
-					this.clientStatus = NetcodeClientStatus.SendingConnectionResponse;
-					break;
-			}
+	#endregion
+	}
+
+#else
+
+	public partial class NetcodeClient : MonoBehaviour
+	{
+		#region Public Properties
+
+		/// <summary>
+		/// The last known status of this client
+		/// </summary>
+		public NetcodeClientStatus Status
+		{
+			get { return (NetcodeClientStatus)internalClient.State; }
 		}
 
 		#endregion
 
-		#region Unity Methods
+		#region Protected Fields
 
-		protected void Update()
+		internal Client internalClient;
+
+		#endregion
+
+		#region Public Methods
+
+		public void Dispose()
 		{
-			// process packets in the queue
-			lock (packetQueue)
-			{
-				while (packetQueue.Count > 0)
-				{
-					// note: packet payload is returned to pool after user callbacks
-					// user callbacks should not keep any references to packet payload
+			internalClient.Disconnect();
+			Destroy(gameObject);
+		}
 
-					var packet = packetQueue.Dequeue();
-					NetworkMessageEvent.Invoke(this, packet);
-					packet.Release();
-				}
-			}
+		/// <summary>
+		/// Set this client's tickrate
+		/// </summary>
+		public void SetTickrate(int tickrate)
+		{
+			internalClient.Tickrate = tickrate;
+		}
+
+		/// <summary>
+		/// Query for this client's status
+		/// </summary>
+		public void QueryStatus(System.Action<NetcodeClientStatus> callback)
+		{
+			callback((NetcodeClientStatus)internalClient.State);
+		}
+
+		/// <summary>
+		/// Connect to a netcode.io server using the connection token
+		/// </summary>
+		public void Connect(byte[] connectToken, System.Action clientConnected, System.Action<string> connectFailedCallback)
+		{
+			internalClient.OnStateChanged += (state) =>
+			{
+				Debug.Log("State changed to: " + (int)state);
+
+				if (state == ClientState.Connected)
+					pushCallback(clientConnected);
+				else if ((int)state < 0)
+					pushCallback(() => { connectFailedCallback("Failed to connect: " + state.ToString()); });
+			};
+
+			internalClient.OnMessageReceived += (payload, length) =>
+			{
+				var packet = new NetcodePacket();
+				packet.ClientID = internalClient.ClientIndex;
+
+				packet.PacketBuffer = ListPool<byte>.GetList(length);
+				for (int i = 0; i < length; i++)
+					packet.PacketBuffer.Add(payload[i]);
+
+				ReceivePacket(packet);
+				packet.Release();
+			};
+
+			internalClient.Connect(connectToken);
+		}
+
+		/// <summary>
+		/// Sends data to the netcode.io server
+		/// </summary>
+		public void Send(byte[] data)
+		{
+			internalClient.Send(data, data.Length);
+		}
+
+		/// <summary>
+		/// Sends data to the netcode.io server
+		/// </summary>
+		public void Send(byte[] data, int length)
+		{
+			internalClient.Send(data, length);
 		}
 
 		#endregion
 	}
+
+#endif
 }
