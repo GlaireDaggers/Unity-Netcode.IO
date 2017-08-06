@@ -1,6 +1,9 @@
 # Unity-Netcode.IO
 A lightweight and easy-to-use plugin to allow Unity games to take advantage of the [Netcode.IO](https://github.com/networkprotocol/netcode.io) protocol for secure UDP communication.
 
+# Netcode.IO.NET
+Unity-Netcode.IO makes use of [Netcode.IO.NET](https://github.com/KillaMaaki/Netcode.IO.NET) to provide support on most platforms except for WebGL (handled via JS plugin). Because of this, the full Netcode.IO.NET API is available to you under the NetcodeIO.NET namespace.
+
 # Usage
 All API functions are in the UnityNetcodeIO namespace.
 First, query for Netcode.IO support with `UnityNetcode.QuerySupport`:
@@ -79,7 +82,51 @@ UnityNetcode.DestroyClient( client );
 ```
 
 ## Server API
-TODO
+The server API relies on some classes under the NetcodeIO.NET namespace, so be sure to include it with any code using the server API.
+Note that the Server API is not compatible with WebGL - attempting to create a server will throw a NotImplementedException. All other platforms may use it, however.
+
+To create a new server, use:
+```c#
+var server = UnityNetcode.CreateServer(
+	ip,		// string public IP clients will connect to
+	port,		// port clients will connect to
+	maxClients,	// maximum number of clients who can connect
+	privateKey );	// byte[32] private encryption key shared between token server and game server
+```
+
+To listen to the server's events:
+```c#
+// Called when a client connects to the server
+server.ClientConnectedEvent.AddListener( callback );	// void( RemoteClient client );
+
+// Called when a client disconnects from the server
+server.ClientDisconnectedEvent.AddListener( callback );	// void( RemoteClient client );
+
+// Called when a client sends a payload to the server
+// Note that byte[] payload will be returned to a pool after the callback, so don't keep a reference to it.
+server.ClientMessageEvent.AddListener( callback );	// void( RemoteClient sender, byte[] payload, int payloadSize );
+```
+
+To start and stop the server, use:
+```c#
+server.StartServer();	// start listening for clients
+server.StopServer();	// stop server and disconnect any clients
+```
+
+To send a payload to a client, use:
+```c#
+server.SendPayload( remoteClient, payload, payloadSize );	// byte[] payload must be between 1 and 1200 bytes.
+```
+
+To disconnect a client, use:
+```c#
+server.Disconnect( remoteClient );
+```
+
+To dispose of a server, use:
+```c#
+server.Dispose();
+```
 
 # Platforms
 UnityNetcode.IO runs on all platforms which support raw socket communication, as well as WebGL with the use of a wrapper around this [browser extension](https://github.com/RedpointGames/netcode.io-browser) which brings Netcode.IO support to the browser.
