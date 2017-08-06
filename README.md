@@ -82,4 +82,4 @@ NetcodeIO.DestroyClient( client );
 
 # Platforms
 Currently only WebGL is supported. All other platforms will indicate no support when querying for Netcode.IO support.
-However, I have already put up a new repository for my Netcode.IO.NET project, which is intentionally .NET 3.5 compatible, and will soon be updating this repo to add seamless support for using Netcode.IO on other platforms, including a server API.
+However, I have already put up a new repository for my [Netcode.IO.NET project](https://github.com/KillaMaaki/Netcode.IO.NET), which is intentionally .NET 3.5 compatible, and will soon be updating this repo to add seamless support for using Netcode.IO on other platforms, including a server API.
