@@ -65,7 +65,7 @@ You can send packets to the server using `NetcodeClient.Send`:
 ```c#
 byte[] data;
 // ...
-client.Send( data );
+client.Send( data );	// data must be between 1 and 1200 bytes
 ```
 
 You can set a client's tickrate using `NetcodeClient.SetTickrate`:
