@@ -78,5 +78,8 @@ And finally, you can destroy a client using `UnityNetcode.DestroyClient`:
 UnityNetcode.DestroyClient( client );
 ```
 
+## Server API
+TODO
+
 # Platforms
 UnityNetcode.IO runs on all platforms which support raw socket communication, as well as WebGL with the use of a wrapper around this [browser extension](https://github.com/RedpointGames/netcode.io-browser) which brings Netcode.IO support to the browser.
