@@ -1,4 +1,4 @@
-﻿#if WEBGL && !UNITY_EDITOR
+﻿#if UNITY_WEBGL && !UNITY_EDITOR
 #define USE_WEBGL_PLUGIN
 #endif
 

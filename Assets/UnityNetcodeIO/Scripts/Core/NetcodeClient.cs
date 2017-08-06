@@ -1,9 +1,10 @@
-﻿#if WEBGL && !UNITY_EDITOR
+﻿#if UNITY_WEBGL && !UNITY_EDITOR
 #define USE_WEBGL_PLUGIN
 #endif
 
 namespace UnityNetcodeIO
 {
+	using System.Collections;
 	using System.Collections.Generic;
 	using UnityEngine;
 	using UnityEngine.Events;
