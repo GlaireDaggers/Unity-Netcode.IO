@@ -353,7 +353,7 @@ namespace UnityNetcodeIO
 				packet.ClientID = internalClient.ClientIndex;
 
 				packet.PacketBuffer = BufferPool.GetBuffer(length);
-				packet.PacketBuffer.MemoryCopy(payload, 0, 0, length);
+				packet.PacketBuffer.BufferCopy(payload, 0, 0, length);
 
 				ReceivePacket(packet);
 			};

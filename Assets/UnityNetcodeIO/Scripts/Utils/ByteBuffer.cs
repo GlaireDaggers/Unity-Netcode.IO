@@ -63,42 +63,6 @@
 		}
 
 		/// <summary>
-		/// Copy bytes from source array into buffer
-		/// </summary>
-		public unsafe void MemoryCopy(byte[] source, int src, int dest, int length)
-		{
-			fixed (byte* srcPtr = &source[src])
-			{
-				MemoryCopy(srcPtr, dest, length);
-			}
-		}
-
-		/// <summary>
-		/// Copy bytes from source pointer into buffer
-		/// </summary>
-		public unsafe void MemoryCopy(byte* source, int dest, int length)
-		{
-			fixed( byte* destPtr = (byte*)GetPointer(0) )
-			{
-				for( int i = 0; i < length; i++ )
-				{
-					*destPtr++ = *source++;
-				}
-			}
-		}
-
-		/// <summary>
-		/// Get a pointer to a buffer element
-		/// </summary>
-		public unsafe void* GetPointer(int index)
-		{
-			fixed (void* ptr = &_buffer[index])
-			{
-				return ptr;
-			}
-		}
-
-		/// <summary>
 		/// Get or set a byte in the buffer
 		/// </summary>
 		public byte this[int index]

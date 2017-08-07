@@ -114,7 +114,7 @@ namespace UnityNetcodeIO
 		protected void pushPacket(RemoteClient sender, byte[] payload, int size)
 		{
 			ByteBuffer buffer = BufferPool.GetBuffer(size);
-			buffer.MemoryCopy(payload, 0, 0, size);
+			buffer.BufferCopy(payload, 0, 0, size);
 
 			serverReceivedPacket packet = new serverReceivedPacket()
 			{
