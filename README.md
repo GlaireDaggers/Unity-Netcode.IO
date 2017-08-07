@@ -90,6 +90,7 @@ To create a new server, use:
 var server = UnityNetcode.CreateServer(
 	ip,		// string public IP clients will connect to
 	port,		// port clients will connect to
+	protocolID,	// ulong number used to identify this application. must be the same as the token server generating connect tokens.
 	maxClients,	// maximum number of clients who can connect
 	privateKey );	// byte[32] private encryption key shared between token server and game server
 ```
