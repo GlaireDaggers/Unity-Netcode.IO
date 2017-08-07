@@ -1,41 +1,39 @@
-﻿namespace UnityNetcodeIO.Internal
+﻿namespace UnityNetcodeIO
 {
 	using System.Collections.Generic;
 
 	/// <summary>
 	/// Pool implementation for generic lists
 	/// </summary>
-	public static class ListPool<T>
+	public static class BufferPool
 	{
-		private static Queue<List<T>> pool = new Queue<List<T>>();
+		private static Queue<ByteBuffer> pool = new Queue<ByteBuffer>();
 
 		/// <summary>
-		/// Get or create a new list
+		/// Get or create a new buffer
 		/// </summary>
-		public static List<T> GetList(int capacity = -1)
+		public static ByteBuffer GetBuffer(int capacity)
 		{
-			List<T> ret = null;
+			ByteBuffer ret = null;
 
 			if (pool.Count > 0)
 			{
 				ret = pool.Dequeue();
-				if (ret.Capacity < capacity)
-					ret.Capacity = capacity;
+				ret.SetSize(capacity);
 			}
 			else
 			{
-				ret = new List<T>();
+				ret = new ByteBuffer(capacity);
 			}
 
 			return ret;
 		}
 
 		/// <summary>
-		/// Return a list to the pool
+		/// Return a buffer to the pool
 		/// </summary>
-		public static void ReturnList(List<T> list)
+		public static void ReturnBuffer(ByteBuffer list)
 		{
-			list.Clear();
 			pool.Enqueue(list);
 		}
 	}

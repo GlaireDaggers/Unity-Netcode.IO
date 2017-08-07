@@ -25,15 +25,23 @@ namespace UnityNetcodeIO
 	/// <summary>
 	/// Event handler for remote clients sending payloads
 	/// </summary>
-	public class NetcodeRemoteClientMessageEvent : UnityEvent<RemoteClient, byte[], int> { }
+	public class NetcodeRemoteClientMessageEvent : UnityEvent<RemoteClient, ByteBuffer> { }
 
 	/// <summary>
 	/// A netcode.io server
 	/// </summary>
 	public class NetcodeServer : MonoBehaviour
 	{
+		private struct serverReceivedPacket
+		{
+			public RemoteClient sender;
+			public ByteBuffer packetBuffer;
+		}
+
 		internal Server internalServer;
-		protected Queue<Action> callbackQueue = new Queue<Action>();
+		private Queue<serverReceivedPacket> packetQueue = new Queue<serverReceivedPacket>();
+		private Queue<RemoteClient> connectedQueue = new Queue<RemoteClient>();
+		private Queue<RemoteClient> disconnectQueue = new Queue<RemoteClient>();
 
 		#region Public fields
 
@@ -52,26 +60,19 @@ namespace UnityNetcodeIO
 
 		internal void ReceivePacket(RemoteClient sender, byte[] payload, int payloadLength)
 		{
-			pushCallback(() =>
-			{
-				ClientMessageEvent.Invoke(sender, payload, payloadLength);
-			});
+			pushPacket(sender, payload, payloadLength);
 		}
 
 		internal void ClientConnected(RemoteClient client)
 		{
-			pushCallback(() =>
-			{
-				ClientConnectedEvent.Invoke(client);
-			});
+			lock (connectedQueue)
+				connectedQueue.Enqueue(client);
 		}
 
 		internal void ClientDisconnected(RemoteClient client)
 		{
-			pushCallback(() =>
-			{
-				ClientDisconnectedEvent.Invoke(client);
-			});
+			lock (disconnectQueue)
+				disconnectQueue.Enqueue(client);
 		}
 
 		#endregion
@@ -91,9 +92,9 @@ namespace UnityNetcodeIO
 			internalServer.Start();
 		}
 
-		public void SendPayload(RemoteClient client, byte[] payload, int payloadLength)
+		public void SendPayload(RemoteClient client, ByteBuffer payload)
 		{
-			internalServer.SendPayload(client, payload, payloadLength);
+			internalServer.SendPayload(client, payload.InternalBuffer, payload.Length);
 		}
 
 		public void Disconnect(RemoteClient client)
@@ -110,10 +111,19 @@ namespace UnityNetcodeIO
 
 		#region Protected methods
 
-		protected void pushCallback(Action callback)
+		protected void pushPacket(RemoteClient sender, byte[] payload, int size)
 		{
-			lock (callbackQueue)
-				callbackQueue.Enqueue(callback);
+			ByteBuffer buffer = BufferPool.GetBuffer(size);
+			buffer.MemoryCopy(payload, 0, 0, size);
+
+			serverReceivedPacket packet = new serverReceivedPacket()
+			{
+				sender = sender,
+				packetBuffer = buffer
+			};
+
+			lock (packetQueue)
+				packetQueue.Enqueue(packet);
 		}
 
 		#endregion
@@ -122,11 +132,29 @@ namespace UnityNetcodeIO
 
 		private void Update()
 		{
-			lock (callbackQueue)
+			lock (packetQueue)
 			{
-				while (callbackQueue.Count > 0)
+				while (packetQueue.Count > 0)
 				{
-					callbackQueue.Dequeue()();
+					var packet = packetQueue.Dequeue();
+					ClientMessageEvent.Invoke(packet.sender, packet.packetBuffer);
+					BufferPool.ReturnBuffer(packet.packetBuffer);
+				}
+			}
+
+			lock (connectedQueue)
+			{
+				while (connectedQueue.Count > 0)
+				{
+					ClientConnectedEvent.Invoke(connectedQueue.Dequeue());
+				}
+			}
+
+			lock (disconnectQueue)
+			{
+				while (disconnectQueue.Count > 0)
+				{
+					ClientDisconnectedEvent.Invoke(disconnectQueue.Dequeue());
 				}
 			}
 		}

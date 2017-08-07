@@ -88,9 +88,8 @@ namespace UnityNetcodeIO
 				byte* byteBufferPtr = (byte*)packetBufferPtr.ToPointer();
 
 				// grab a byte list off of the pool and copy the bytes over
-				List<byte> byteArray = ListPool<byte>.GetList(packetBufferLength);
-				for (int i = 0; i < packetBufferLength; i++)
-					byteArray.Add(*byteBufferPtr++);
+				ByteBuffer byteArray = BufferPool.GetBuffer(packetBufferLength);
+				byteArray.MemoryCopy(byteBufferPtr, 0, packetBufferLength);
 
 				// create packet struct
 				NetcodePacket packet = new NetcodePacket();

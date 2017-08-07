@@ -36,7 +36,7 @@ public class TestNetcodeIOServer : MonoBehaviour
 
 		server.StartServer();
 
-		log("Server started");
+		logLine("Server started");
 	}
 
 	private void OnDestroy()
@@ -44,15 +44,15 @@ public class TestNetcodeIOServer : MonoBehaviour
 		server.Dispose();
 	}
 
-	private void Server_OnClientMessage(RemoteClient client, byte[] payload, int size)
+	private void Server_OnClientMessage(RemoteClient client, ByteBuffer payload)
 	{
 		// just redirect payload back
-		server.SendPayload(client, payload, size);
+		server.SendPayload(client, payload);
 	}
 
 	private void Server_OnClientConnected(RemoteClient client)
 	{
-		log("Client connected: " + client.RemoteEndpoint.ToString());
+		logLine("Client connected: " + client.RemoteEndpoint.ToString());
 
 		clients++;
 		NumClientsText.text = clients.ToString() + "/" + MaxClients.ToString();
@@ -60,7 +60,7 @@ public class TestNetcodeIOServer : MonoBehaviour
 
 	private void Server_OnClientDisconnected(RemoteClient client)
 	{
-		log("Client disconnected: " + client.RemoteEndpoint.ToString());
+		logLine("Client disconnected: " + client.RemoteEndpoint.ToString());
 
 		clients--;
 		NumClientsText.text = clients.ToString() + "/" + MaxClients.ToString();

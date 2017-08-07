@@ -22,17 +22,54 @@ namespace UnityNetcodeIO
 	/// </summary>
 	public enum NetcodeClientStatus
 	{
+		/// <summary>
+		/// The client is not connected to a server
+		/// </summary>
 		Disconnected = 0,
+
+		/// <summary>
+		/// The client has connected to a server
+		/// </summary>
 		Connected = 3,
 
+		/// <summary>
+		/// The client is currently sending a connection request
+		/// </summary>
 		SendingConnectionRequest = 1,
+
+		/// <summary>
+		/// The client is currently sending a challenge response
+		/// </summary>
 		SendingConnectionResponse = 2,
 
+		/// <summary>
+		/// The client's connection request was denied
+		/// </summary>
 		ConnectionDenied = -1,
+
+		/// <summary>
+		/// The server did not respond to the client's connection request
+		/// </summary>
 		ConnectionRequestTimeout = -2,
+
+		/// <summary>
+		/// The server did not respond to the client's challenge response
+		/// </summary>
 		ConnectionResponseTimeout = -3,
+
+		/// <summary>
+		/// The client has not received any messages from the server within timeout period
+		/// </summary>
 		ConnectionTimedOut = -4,
+
+		/// <summary>
+		/// The connect token is invalid
+		/// </summary>
 		InvalidConnectToken = -5,
+
+		/// <summary>
+		/// The connect token has expired
+		/// </summary>
 		ConnectTokenExpired = -6,
 	}
 
@@ -315,12 +352,10 @@ namespace UnityNetcodeIO
 				var packet = new NetcodePacket();
 				packet.ClientID = internalClient.ClientIndex;
 
-				packet.PacketBuffer = ListPool<byte>.GetList(length);
-				for (int i = 0; i < length; i++)
-					packet.PacketBuffer.Add(payload[i]);
+				packet.PacketBuffer = BufferPool.GetBuffer(length);
+				packet.PacketBuffer.MemoryCopy(payload, 0, 0, length);
 
 				ReceivePacket(packet);
-				packet.Release();
 			};
 
 			internalClient.Connect(connectToken);

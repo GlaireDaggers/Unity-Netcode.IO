@@ -12,11 +12,11 @@
 	public struct NetcodePacket
 	{
 		public int ClientID;
-		public List<byte> PacketBuffer;
+		public ByteBuffer PacketBuffer;
 
 		public void Release()
 		{
-			ListPool<byte>.ReturnList(PacketBuffer);
+			BufferPool.ReturnBuffer(PacketBuffer);
 			PacketBuffer = null;
 		}
 	}
