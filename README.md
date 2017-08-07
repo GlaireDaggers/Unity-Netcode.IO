@@ -131,7 +131,8 @@ server.Dispose();
 # ByteBuffer
 Note that the client and server APIs both make use of a `ByteBuffer` class. This is a helper class which provides the functionality of a resizable byte array, with some extra helper methods on top.
 You may use a ByteBuffer as if it were an array - access bytes using `buffer[index]` and check its size using `buffer.Length`.
-Additionally, you can copy data from other byte arrays using `buffer.BufferCopy( sourceArray, sourceIndex, destinationIndex, bytesToCopy )`, or other ByteBuffers in another overload of the same function. You can also use the following variations of the `ByteBuffer.MemoryCopy` function as an alternative:
+Additionally, you can copy data from other byte arrays using `buffer.BufferCopy( sourceArray, sourceIndex, destinationIndex, bytesToCopy )`, or other ByteBuffers in another overload of the same function.
+You can also use the following variations of the `ByteBuffer.MemoryCopy` function as an alternative:
 
 ```c#
 // Uses unsafe code to copy bytes from a source array into the ByteBuffer. Does not do bounds checking!
