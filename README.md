@@ -133,16 +133,6 @@ Note that the client and server APIs both make use of a `ByteBuffer` class. This
 You may use a ByteBuffer as if it were an array - access bytes using `buffer[index]` and check its size using `buffer.Length`.
 Additionally, you can copy data from other byte arrays using `buffer.BufferCopy( sourceArray, sourceIndex, destinationIndex, bytesToCopy )`, or other ByteBuffers in another overload of the same function.
 
-You can also use the following variations of the `ByteBuffer.MemoryCopy` function as a slightly faster alternative (yes, this even works in WebGL!):
-
-```c#
-// Uses unsafe code to copy bytes from a source array into the ByteBuffer. Does not do bounds checking!
-buffer.MemoryCopy( byte[] source, int src, int dest, int length );
-
-// Uses unsafe code to copy bytes from a source pointer into the ByteBuffer.
-buffer.MemoryCopy( byte* source, int dest, int length );
-```
-
 Additionally, you can use the `BufferPool` class to allocate and release buffers in a memory-friendly way:
 
 ```c#
