@@ -78,39 +78,11 @@
 		/// </summary>
 		public unsafe void MemoryCopy(byte* source, int dest, int length)
 		{
-			byte* destPtr = (byte*)GetPointer(0);
-
-			int remaining = length;
-			while (remaining > 0)
+			fixed( byte* destPtr = (byte*)GetPointer(0) )
 			{
-				if (remaining >= sizeof(ulong))
-				{
-					*((ulong*)destPtr) = *((ulong*)source);
-					destPtr += sizeof(ulong);
-					source += sizeof(ulong);
-
-					remaining -= sizeof(ulong);
-				}
-				else if (remaining >= sizeof(uint))
-				{
-					*((uint*)destPtr) = *((uint*)source);
-					destPtr += sizeof(uint);
-					source += sizeof(uint);
-
-					remaining -= sizeof(uint);
-				}
-				else if (remaining >= sizeof(ushort))
-				{
-					*((ushort*)destPtr) = *((ushort*)source);
-					destPtr += sizeof(ushort);
-					source += sizeof(ushort);
-
-					remaining -= sizeof(ushort);
-				}
-				else
+				for( int i = 0; i < length; i++ )
 				{
 					*destPtr++ = *source++;
-					remaining--;
 				}
 			}
 		}
