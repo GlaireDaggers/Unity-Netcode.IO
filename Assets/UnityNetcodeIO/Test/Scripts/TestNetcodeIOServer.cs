@@ -28,7 +28,7 @@ public class TestNetcodeIOServer : MonoBehaviour
 
 	private void Start()
 	{
-		server = UnityNetcode.CreateServer(PublicIP, Port, MaxClients, privateKey);
+		server = UnityNetcode.CreateServer(PublicIP, Port, 0x1122334455667788L, MaxClients, privateKey);
 
 		server.ClientConnectedEvent.AddListener(Server_OnClientConnected);
 		server.ClientDisconnectedEvent.AddListener(Server_OnClientDisconnected);

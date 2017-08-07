@@ -60,8 +60,6 @@ namespace UnityNetcodeIO
 		/// </summary>
 		public static UnityNetcode Instance;
 
-		public static ulong ProtocolID = 0x1122334455667788L;
-
 		#region Protected static methods
 
 		// singleton bootstrapper so Netcode.IO manager is always available
@@ -152,9 +150,10 @@ namespace UnityNetcodeIO
 		/// </summary>
 		/// <param name="ip">Public IP address clients will connect to</param>
 		/// <param name="port">Port clients will connect to</param>
+		/// <param name="protocolID">Protocol ID for this app (must be same as connect token server)</param>
 		/// <param name="maxClients">Maximum clients which can connect</param>
 		/// <param name="privateKey">The private key (shared by your game servers and token servers/backend)</param>
-		public static NetcodeServer CreateServer(string ip, int port, int maxClients, byte[] privateKey)
+		public static NetcodeServer CreateServer(string ip, int port, ulong protocolID, int maxClients, byte[] privateKey)
 		{
 #if USE_WEBGL_PLUGIN
 			throw new NotImplementedException();
@@ -163,7 +162,7 @@ namespace UnityNetcodeIO
 			NetcodeServer serverObj = new GameObject("__netcode_server_" + (serverHandle++)).AddComponent<NetcodeServer>();
 			serverObj.transform.SetParent(Instance.transform);
 
-			Server server = new Server(maxClients, ip, port, ProtocolID, privateKey);
+			Server server = new Server(maxClients, ip, port, protocolID, privateKey);
 			serverObj.internalServer = server;
 			internal_servers.Add(server);
 
@@ -199,7 +198,7 @@ namespace UnityNetcodeIO
 			NetcodeClient clientObj = new GameObject("__netcode_client_" + (clientHandle++)).AddComponent<NetcodeClient>();
 			clientObj.transform.SetParent(Instance.transform);
 
-			Client client = new Client(ProtocolID);
+			Client client = new Client();
 			clientObj.internalClient = client;
 			internal_clients.Add(client);
 
