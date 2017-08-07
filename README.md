@@ -55,7 +55,7 @@ You can add a listener for when packets are received using `NetcodeClient.AddPay
 client.AddPayloadListener( (clientReceiver, packet) =>
 {
 	// clientReceiver is the client receiving the packet
-	// packet contains client ID (as originally issued by token server) and List<byte> of packet payload
+	// packet contains client ID (as originally issued by token server) and ByteBuffer of packet payload
 	// note that the payload will be returned to a pool after this handler runs, so do not keep a reference to it!
 } );
 ```
@@ -104,7 +104,7 @@ server.ClientDisconnectedEvent.AddListener( callback );	// void( RemoteClient cl
 
 // Called when a client sends a payload to the server
 // Note that byte[] payload will be returned to a pool after the callback, so don't keep a reference to it.
-server.ClientMessageEvent.AddListener( callback );	// void( RemoteClient sender, byte[] payload, int payloadSize );
+server.ClientMessageEvent.AddListener( callback );	// void( RemoteClient sender, ByteBuffer payload );
 ```
 
 To start and stop the server, use:
@@ -115,7 +115,7 @@ server.StopServer();	// stop server and disconnect any clients
 
 To send a payload to a client, use:
 ```c#
-server.SendPayload( remoteClient, payload, payloadSize );	// byte[] payload must be between 1 and 1200 bytes.
+server.SendPayload( remoteClient, ByteBuffer payload );	// payload must be between 1 and 1200 bytes.
 ```
 
 To disconnect a client, use:
@@ -126,6 +126,21 @@ server.Disconnect( remoteClient );
 To dispose of a server, use:
 ```c#
 server.Dispose();
+```
+
+# ByteBuffer
+Note that the client and server APIs both make use of a `ByteBuffer` class. This is a helper class which provides the functionality of a resizable byte array, with some extra helper methods on top.
+You may use a ByteBuffer as if it were an array - access bytes using `buffer[index]` and check its size using `buffer.Length`.
+Additionally, you can copy data from other byte arrays using `buffer.BufferCopy( sourceArray, sourceIndex, destinationIndex, bytesToCopy )`, or other ByteBuffers in another overload of the same function.
+
+Additionally, you can use the `BufferPool` class to allocate and release buffers in a memory-friendly way:
+
+```c#
+// to retrieve a buffer from the pool...
+var buffer = BufferPool.GetBuffer( numBytes );
+
+// and to return a buffer to the pool.
+BufferPool.ReturnBuffer( buffer );
 ```
 
 # Platforms
