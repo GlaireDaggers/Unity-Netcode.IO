@@ -2,7 +2,7 @@
 A lightweight and easy-to-use plugin to allow Unity games to take advantage of the [Netcode.IO](https://github.com/networkprotocol/netcode.io) protocol for secure UDP communication.
 
 # Netcode.IO.NET
-Unity-Netcode.IO makes use of [Netcode.IO.NET](https://github.com/KillaMaaki/Netcode.IO.NET) to provide support on most platforms except for WebGL (handled via JS plugin). Because of this, the full Netcode.IO.NET API is available to you under the `NetcodeIO.NET` namespace.
+While a JSLIB wrapper is used to provide Netcode.IO in WebGL builds, Unity-Netcode.IO also makes use of [Netcode.IO.NET](https://github.com/KillaMaaki/Netcode.IO.NET) to provide support on all other platforms. Because of this, all classes within the Netcode.IO.NET project are available in this project as well under the `NetcodeIO.NET` namespace.
 
 # Usage
 All API functions are in the `UnityNetcodeIO` namespace.
@@ -90,6 +90,7 @@ To create a new server, use:
 var server = UnityNetcode.CreateServer(
 	ip,		// string public IP clients will connect to
 	port,		// port clients will connect to
+	protocolID,	// ulong number used to identify this application. must be the same as the token server generating connect tokens.
 	maxClients,	// maximum number of clients who can connect
 	privateKey );	// byte[32] private encryption key shared between token server and game server
 ```
