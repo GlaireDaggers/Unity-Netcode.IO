@@ -61,6 +61,15 @@
 		{
 			System.Buffer.BlockCopy(source._buffer, src, _buffer, dest, length);
 		}
+		
+		/// <summary>
+		/// Copy bytes into the buffer
+		/// </summary>
+		public void MemoryCopy(byte* source, int dest, int length )
+		{
+			for( int i = 0; i < length; i++ )
+				_buffer[i + dest] = *source++;
+		}
 
 		/// <summary>
 		/// Get or set a byte in the buffer
