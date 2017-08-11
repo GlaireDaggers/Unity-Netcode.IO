@@ -146,3 +146,8 @@ BufferPool.ReturnBuffer( buffer );
 
 # Platforms
 UnityNetcode.IO runs on all platforms which support raw socket communication, as well as WebGL with the use of a wrapper around this [browser extension](https://github.com/RedpointGames/netcode.io-browser) which brings Netcode.IO support to the browser.
+
+# A note about UDP and unreliability
+UnityNetcode.IO is a Unity API for working with the Netcode.IO protocol.
+At its heart, Netcode.IO is an encryption and connection based abstraction on top of UDP. And, just like UDP, it has zero guarantees about reliability. Your messages may not make it, and they may not make it in order. That's just a fact of the internet.
+That said, any game will almost certainly need some kind of reliability layer. To that end, my [ReliableNetcode.NET](https://github.com/KillaMaaki/ReliableNetcode.NET) project provides an agnostic and easy to use reliability layer you can use to add this functionality to your game.
