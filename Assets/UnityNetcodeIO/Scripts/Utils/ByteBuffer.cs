@@ -65,7 +65,7 @@
 		/// <summary>
 		/// Copy bytes into the buffer
 		/// </summary>
-		public void MemoryCopy(byte* source, int dest, int length )
+		public unsafe void MemoryCopy(byte* source, int dest, int length )
 		{
 			for( int i = 0; i < length; i++ )
 				_buffer[i + dest] = *source++;
