@@ -147,6 +147,9 @@ BufferPool.ReturnBuffer( buffer );
 # Platforms
 UnityNetcode.IO runs on all platforms which support raw socket communication, as well as WebGL with the use of a wrapper around this [browser extension](https://github.com/RedpointGames/netcode.io-browser) which brings Netcode.IO support to the browser.
 
+# KNOWN ISSUES
+In a browser, the callback passed for connect is always called immediately regardless of successful connection, the error callback is never called regardless of connection failures. I could set up a continuous asynchronous poll, though there's an update pending approval which adds the ability to directly listen for state changes with a callback to the underlying JS API, which would be a better solution. In the meantime it's still possible to set up a continuous poll and manually check for state changes.
+
 # A note about UDP and unreliability
 UnityNetcode.IO is a Unity API for working with the Netcode.IO protocol.
 At its heart, Netcode.IO is an encryption and connection based abstraction on top of UDP. And, just like UDP, it has zero guarantees about reliability. Your messages may not make it, and they may not make it in order. That's just a fact of the internet.
