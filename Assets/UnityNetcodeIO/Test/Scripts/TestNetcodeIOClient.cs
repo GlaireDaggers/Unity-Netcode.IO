@@ -50,7 +50,7 @@ public class TestNetcodeIOClient : MonoBehaviour
 		UnityWebRequest webRequest = UnityWebRequest.Get(TokenServer);
 		yield return webRequest.Send();
 
-		if (webRequest.isError)
+		if (webRequest.isNetworkError)
 		{
 			logLine("Failed to obtain connect token: " + webRequest.error);
 			yield break;
